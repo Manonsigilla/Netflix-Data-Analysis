@@ -47,9 +47,11 @@ Les États-Unis et l'Inde dominent largement la production des œuvres présente
 
 ## 📂 Structure du projet
 
+```text
 📦 Netflix-Data-Analysis
  ┣ 📜 NetflixDataAnalysis.ipynb  # Notebook principal contenant l'EDA
  ┣ 📜 netflix_titles.csv         # Dataset original
  ┣ 📜 README.md                  # Documentation du projet
  ┣ 🖼️ Assets                     # Export graphique
+```
 
