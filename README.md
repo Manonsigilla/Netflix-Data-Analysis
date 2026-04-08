@@ -46,12 +46,40 @@ On observe une croissance exponentielle des ajouts au catalogue à partir de 201
 Les États-Unis et l'Inde dominent largement la production des œuvres présentes sur la plateforme.
 
 ## 📂 Structure du projet
-
 ```text
 📦 Netflix-Data-Analysis
  ┣ 📜 NetflixDataAnalysis.ipynb  # Notebook principal contenant l'EDA
  ┣ 📜 netflix_titles.csv         # Dataset original
  ┣ 📜 README.md                  # Documentation du projet
- ┣ 🖼️ Assets                     # Export graphique
+ ┗ 📂 Assets
+   ┗ 📂 Images
+     ┣ 🖼️ evolution_ajouts.png
+     ┣ 🖼️ repartition_duree_films.png
+     ┣ 🖼️ repartition_duree_series.png
+     ┣ 🖼️ repartition_type.png
+     ┗ 🖼️ top-10_pays.png
 ```
 
+## 📊 Principaux Résultats & Visualisations
+
+Suite au nettoyage des données (traitement des valeurs manquantes, formatage des dates et durées), plusieurs axes ont été explorés.
+
+### 1. Répartition du type de contenu
+Le catalogue est historiquement et majoritairement orienté vers les formats longs (Films) au détriment des Séries.
+
+![Répartition des types de contenu](Assets/Images/repartition_type.png)
+
+### 2. Évolution des ajouts sur la plateforme
+On observe une croissance exponentielle des ajouts au catalogue à partir de 2017/2018, marquant le changement de stratégie de Netflix vers la production de contenu original.
+
+![Évolution des ajouts](Assets/Images/evolution_ajouts.png)
+
+### 3. Top des pays producteurs
+Les États-Unis et l'Inde dominent largement la production des œuvres présentes sur la plateforme.
+
+![Top 10 des pays producteurs](Assets/Images/top-10_pays.png)
+
+### 4. Répartition des durées
+| Films | Séries |
+|-------|--------|
+| ![Durée des films](Assets/Images/repartition_duree_films.png) | ![Durée des séries](Assets/Images/repartition_duree_series.png) |
