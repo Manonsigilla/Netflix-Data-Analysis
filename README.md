@@ -32,7 +32,7 @@ Ce projet consiste en une analyse exploratoire de données (EDA) du catalogue Ne
    jupyter notebook NetflixDataAnalysis.ipynb
    ```
 
-## Principaux Résultats & Visualisations
+## 📊 Principaux Résultats & Visualisations
 
 Suite au nettoyage des données (traitement des valeurs manquantes, formatage des dates et durées), plusieurs axes ont été explorés.
 1. Répartition du type de contenu
@@ -45,7 +45,7 @@ On observe une croissance exponentielle des ajouts au catalogue à partir de 201
 
 Les États-Unis et l'Inde dominent largement la production des œuvres présentes sur la plateforme.
 
-## Structure du projet
+## 📂 Structure du projet
 
 📦 Netflix-Data-Analysis
  ┣ 📜 NetflixDataAnalysis.ipynb  # Notebook principal contenant l'EDA
