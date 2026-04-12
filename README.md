@@ -25,22 +25,53 @@ Initialement conçu comme une analyse exploratoire classique (Jupyter Notebook),
 * **Création d'application Web :** Streamlit
 * **Versionnement :** Git & GitHub
 
+## Veille Technologique : Jupyter Notebook
+
+### Qu'est-ce que Jupyter Notebook ?
+
+**Jupyter Notebook** est un environnement interactif web open-source permettant :
+
+- Exécution de code Python/R ligne par ligne
+- Mélange de code, texte (Markdown), visualisations et outputs
+- Documentation inline et reproductibilité
+- Partage et collaboration simplifiés
+
+### Évolution et tendances (2024-2025)
+
+1. **Jupyter dans l'IA/ML** : Standard de facto pour l'exploration de données et l'entraînement de modèles
+2. **JupyterHub & JupyterLab** : Versions multi-utilisateurs et interfaces améliorées
+3. **Notebooks interactifs** : Avènement de technologies comme Quarto, Jupyter Book pour publications scientifiques
+4. **Intégration CI/CD** : Validation et test automatisés des notebooks
+5. **Limitations connues** : Gestion des versions difficile (GitHub diffs en JSON), problèmes de reproductibilité
+
+### Utilité pour l'analyse de données
+
+Jupyter est l'outil de choix pour :
+
+- **EDA (Exploratory Data Analysis)** : Rapidité d'itération
+- **Documentation interactive** : Code + explications
+- **Communication de résultats** : Présentations professionnelles
+- **Apprentissage** : Format pédagogique naturel
+
 ## 📌 Contexte du projet
+
 Ce projet consiste en une analyse exploratoire de données (EDA) du catalogue Netflix. L'objectif est de nettoyer, transformer et analyser un jeu de données contenant les films et séries de la plateforme afin d'en extraire des tendances (types de contenus, pays producteurs, évolution des ajouts, etc.).
 
 ## 🚀 Installation & Exécution
 
 1. Clonez ce dépôt sur votre machine locale :
+
    ```bash
    git clone [https://github.com/TonPseudo/Netflix-Data-Analysis.git](https://github.com/TonPseudo/Netflix-Data-Analysis.git)
    cd Netflix-Data-Analysis
    ```
 
 2. Assurez-vous d'avoir les dépendances requises installées :
+
   ```bash
   pip install pandas numpy matplotlib seaborn missingno plotly streamlit
   ```
-   
+
 3. Lancez Jupyter Notebook et ouvrez le fichier d'analyse :
 
    ```bash

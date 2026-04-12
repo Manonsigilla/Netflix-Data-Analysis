@@ -154,109 +154,102 @@ with tab3:
     st.write("Survolez les graphiques pour voir les détails exacts !")
     st.markdown("---")
     
-    tab_a, tab_b, tab_e, tab_f, tab_k = st.tabs([
-        "🅰️ Répartition Type", 
-        "🅱️ Top Pays", 
-        "🅴 Durée Films", 
-        "🅵 Saisons Séries", 
-        "🅺 Évolution Ajouts"
-    ])
-    
-    # --- TAB A : Répartition type ---
-    with tab_a:
-        st.subheader("a. Répartition du type d'œuvres (Films vs Séries)")
-        
-        df_type = df['type'].value_counts().reset_index()
-        df_type.columns = ['type', 'count']
-        
-        fig_a = create_bar_chart(
-            df_type,
-            x='type',
-            y='count',
-            title="Répartition Films vs Séries",
-            xlabel="Type",
-            ylabel="Nombre d'œuvres",
-            color_map={'Movie': '#E50914', 'TV Show': '#F5F5F1'}
-        )
-        st.plotly_chart(fig_a, use_container_width=True)
-        
-        st.info("**Interprétation :** Le catalogue de Netflix est historiquement et majoritairement composé de films (environ 70%). Bien que Netflix produise de plus en plus de séries originales, l'achat de droits de diffusion pour les films maintient cette domination.")
+    tab_a, tab_b, tab_c, tab_d, tab_e, tab_f, tab_h, tab_i, tab_j, tab_k = st.tabs([
+    "🅰️ Type", 
+    "🅱️ Pays", 
+    "🅲 Années",
+    "🅳 Ratings",
+    "🅴 Durée Films", 
+    "🅵 Saisons",
+    "🅷 Top 5 Séries",
+    "🅸 Top 5 Films",
+    "🅹 Directors FR",
+    "🅺 Évolution"
+])
 
-    # --- TAB B : Top pays ---
-    with tab_b:
-        st.subheader("b. Top 10 des pays producteurs")
-        
-        df_pays = df.dropna(subset=['country'])['country'].value_counts().head(10).reset_index()
-        df_pays.columns = ['country', 'count']
-        
-        fig_b = create_bar_chart(
-            df_pays,
-            x='country',
-            y='count',
-            title="Top 10 Pays Producteurs",
-            xlabel="Pays",
-            ylabel="Nombre d'œuvres"
-        )
-        st.plotly_chart(fig_b, use_container_width=True)
-        
-        st.info("**Interprétation :** Sans surprise, les États-Unis dominent largement le marché. La deuxième place de l'Inde est remarquable et souligne la stratégie d'expansion de Netflix sur le marché très prolifique de Bollywood.")
+# --- TAB A : Type ---
+with tab_a:
+    st.subheader("a. Répartition du type d'œuvres")
+    df_type = df['type'].value_counts().reset_index()
+    df_type.columns = ['type', 'count']
+    fig_a = create_bar_chart(df_type, x='type', y='count', title="Films vs Séries")
+    st.plotly_chart(fig_a, use_container_width=True)
 
-    # --- TAB E : Durée films ---
-    with tab_e:
-        st.subheader("e. Répartition de la durée des films")
-        
-        df_movies = df[df['type'] == 'Movie'].copy()
-        
-        fig_e = create_histogram(
-            df_movies,
-            column='duration_num',
-            title="Distribution de la durée des films",
-            nbins=50,
-            xlabel="Durée (minutes)",
-            ylabel="Nombre de films"
-        )
-        st.plotly_chart(fig_e, use_container_width=True)
-        
-        st.info("**Interprétation :** La distribution suit une courbe en cloche (normale) très classique. La grande majorité des films durent entre 90 et 110 minutes (1h30 à 1h50), ce qui correspond au format standard de l'industrie cinématographique.")
+# --- TAB B : Pays ---
+with tab_b:
+    st.subheader("b. Top 10 des pays producteurs")
+    df_pays = df.dropna(subset=['country'])['country'].value_counts().head(10).reset_index()
+    df_pays.columns = ['country', 'count']
+    fig_b = create_bar_chart(df_pays, x='country', y='count', title="Top 10 Pays")
+    st.plotly_chart(fig_b, use_container_width=True)
 
-    # --- TAB F : Saisons séries ---
-    with tab_f:
-        st.subheader("f. Répartition du nombre de saisons des séries")
-        
-        df_shows = df[df['type'] == 'TV Show'].copy()
-        
-        df_shows_counts = df_shows['duration_num'].value_counts().reset_index().sort_values('duration_num')
-        df_shows_counts.columns = ['saisons', 'count']
-        
-        fig_f = create_bar_chart(
-            df_shows_counts,
-            x='saisons',
-            y='count',
-            title="Distribution du nombre de saisons",
-            xlabel="Nombre de saisons",
-            ylabel="Nombre de séries"
-        )
-        fig_f.update_xaxes(tickmode='linear')
-        st.plotly_chart(fig_f, use_container_width=True)
-        
-        st.info("**Interprétation :** On observe une chute drastique après la saison 1. Cela s'explique par deux facteurs : l'abondance de 'mini-séries' conçues pour une seule saison, et la politique stricte de Netflix qui annule rapidement les séries si les audiences de la première saison ne sont pas au rendez-vous.")
+# --- TAB C : Années (NOUVEAU) ---
+with tab_c:
+    st.subheader("c. Répartition des années (d'ajout au catalogue)")
+    df_years = df['year_added'].dropna().value_counts().sort_index().reset_index()
+    df_years.columns = ['year_added', 'count']
+    fig_c = create_bar_chart(df_years, x='year_added', y='count', title="Années d'ajout")
+    st.plotly_chart(fig_c, use_container_width=True)
+    st.info("**Analyse :** Le catalogue a connu une croissance exponentielle entre 2015 et 2019.")
 
-    # --- TAB K : Évolution ajouts ---
-    with tab_k:
-        st.subheader("k. Évolution des ajouts au catalogue par année")
-        
-        df_year = df.groupby(['year_added', 'type']).size().reset_index(name='count')
-        
-        fig_k = create_grouped_bar_chart(
-            df_year,
-            x='year_added',
-            y='count',
-            color='type',
-            title="Évolution des ajouts par année",
-            xlabel="Année d'ajout",
-            ylabel="Nombre d'œuvres ajoutées",
-            color_map={'Movie': '#E50914', 'TV Show': '#F5F5F1'}
-        )
-        st.plotly_chart(fig_k, use_container_width=True)
-        
-        st.info("**Interprétation :** On observe une croissance exponentielle des ajouts de 2015 à 2019, marquant l'âge d'or de l'expansion mondiale de Netflix. La légère baisse amorcée après 2019/2020 peut s'expliquer par les retards de production liés au COVID-19 et par un changement de stratégie privilégiant la qualité à la quantité face à une concurrence accrue.")
+# --- TAB D : Ratings (NOUVEAU) ---
+with tab_d:
+    st.subheader("d. Répartition des ratings")
+    df_ratings = df.dropna(subset=['rating'])['rating'].value_counts().reset_index()
+    df_ratings.columns = ['rating', 'count']
+    fig_d = create_bar_chart(df_ratings, x='rating', y='count', title="Distribution des ratings")
+    st.plotly_chart(fig_d, use_container_width=True)
+    st.info("**Analyse :** Netflix propose du contenu pour tous les publics, avec dominance des ratings adultes.")
+
+# --- TAB E : Durée films ---
+with tab_e:
+    st.subheader("e. Répartition de la durée des films")
+    df_movies = df[df['type'] == 'Movie'].copy()
+    fig_e = create_histogram(df_movies, column='duration_num', title="Durée films", nbins=50)
+    st.plotly_chart(fig_e, use_container_width=True)
+
+# --- TAB F : Saisons ---
+with tab_f:
+    st.subheader("f. Répartition du nombre de saisons")
+    df_shows = df[df['type'] == 'TV Show'].copy()
+    df_shows_counts = df_shows['duration_num'].value_counts().reset_index().sort_values('duration_num')
+    df_shows_counts.columns = ['saisons', 'count']
+    fig_f = create_bar_chart(df_shows_counts, x='saisons', y='count', title="Saisons")
+    st.plotly_chart(fig_f, use_container_width=True)
+
+# --- TAB H : Top 5 séries (NOUVEAU) ---
+with tab_h:
+    st.subheader("h. Top 5 des séries les plus longues")
+    df_tv = df[df['type'] == 'TV Show'].copy()
+    top_5_shows = df_tv.nlargest(5, 'duration_num')[['title', 'duration_num']]
+    fig_h = px.bar(top_5_shows, x='duration_num', y='title', orientation='h', title="Top 5 séries")
+    st.plotly_chart(fig_h, use_container_width=True)
+
+# --- TAB I : Top 5 films (NOUVEAU) ---
+with tab_i:
+    st.subheader("i. Top 5 des films les plus longs")
+    df_mov = df[df['type'] == 'Movie'].copy()
+    top_5_movies = df_mov.nlargest(5, 'duration_num')[['title', 'duration_num']]
+    fig_i = px.bar(top_5_movies, x='duration_num', y='title', orientation='h', title="Top 5 films")
+    st.plotly_chart(fig_i, use_container_width=True)
+
+# --- TAB J : Directors français (NOUVEAU) ---
+with tab_j:
+    st.subheader("j. Top réalisateurs français")
+    df_fr = df[df['country'].str.contains('France', na=False, case=False)].copy()
+    df_fr_dir = df_fr.dropna(subset=['director']).copy()
+    df_fr_dir['director'] = df_fr_dir['director'].str.split(', ')
+    df_fr_dir = df_fr_dir.explode('director')
+    top_fr = df_fr_dir['director'].value_counts().head(10).reset_index()
+    top_fr.columns = ['director', 'count']
+    fig_j = create_bar_chart(top_fr, x='count', y='director', title="Top réalisateurs FR")
+    st.plotly_chart(fig_j, use_container_width=True)
+
+# --- TAB K : Évolution ---
+with tab_k:
+    st.subheader("k. Évolution des ajouts par année")
+    df_year = df.groupby(['year_added', 'type']).size().reset_index(name='count')
+    fig_k = create_grouped_bar_chart(df_year, x='year_added', y='count', color='type',
+        title="Évolution", xlabel="Année d'ajout", ylabel="Nombre d'œuvres",
+        color_map={'Movie': '#E50914', 'TV Show': '#F5F5F1'})
+    st.plotly_chart(fig_k, use_container_width=True)
