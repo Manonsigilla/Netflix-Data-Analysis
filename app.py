@@ -8,7 +8,9 @@ avec KPIs, analyses exploratoires et graphiques avancés.
 import streamlit as st
 import plotly.express as px
 import matplotlib.pyplot as plt
+import pandas as pd
 import seaborn as sns
+from difflib import SequenceMatcher
 from data_processing import load_and_clean_data, explode_column
 
 # ==========================================
@@ -104,6 +106,246 @@ with col2:
 with col3:
     nb_tvshows = len(df[df['type'] == 'TV Show'])
     st.metric(label="Séries", value=f"{nb_tvshows:,}".replace(',', ' '))
+
+st.markdown("---")
+
+# ==========================================
+# BARRE DE RECHERCHE INTELLIGENTE V2 - FINAL
+# ==========================================
+
+def calculate_similarity(a, b):
+    """Calcule la similarité entre deux chaînes (0 à 1)"""
+    return SequenceMatcher(None, a.lower(), b.lower()).ratio()
+
+def find_suggestions(search_term, df, max_suggestions=5):
+    """Trouve les meilleures suggestions basées sur la recherche"""
+    all_items = []
+    
+    # Chercher dans les titres
+    for title in df['title'].unique():
+        similarity = calculate_similarity(search_term, title)
+        if similarity > 0.3:
+            all_items.append({
+                'type': 'Titre',
+                'value': title,
+                'similarity': similarity,
+                'icon': '🎬'
+            })
+    
+    # Chercher dans les réalisateurs
+    directors = []
+    for dir_list in df['director'].dropna():
+        for director in str(dir_list).split(', '):
+            if director not in directors:
+                directors.append(director)
+    
+    for director in directors:
+        similarity = calculate_similarity(search_term, director)
+        if similarity > 0.3:
+            all_items.append({
+                'type': 'Réalisateur',
+                'value': director,
+                'similarity': similarity,
+                'icon': '👤'
+            })
+    
+    # Chercher dans les pays
+    countries_set = set()
+    for country in df['country'].dropna().unique():
+        if pd.isna(country):
+            continue
+        for c in str(country).split(', '):
+            countries_set.add(c)
+    
+    for country in countries_set:
+        similarity = calculate_similarity(search_term, country)
+        if similarity > 0.3:
+            all_items.append({
+                'type': 'Pays',
+                'value': country,
+                'similarity': similarity,
+                'icon': '🌍'
+            })
+    
+    # Chercher dans les genres
+    genres = []
+    for genre_list in df['listed_in'].dropna():
+        for genre in str(genre_list).split(', '):
+            if genre not in genres:
+                genres.append(genre)
+    
+    for genre in genres:
+        similarity = calculate_similarity(search_term, genre)
+        if similarity > 0.3:
+            all_items.append({
+                'type': 'Genre',
+                'value': genre,
+                'similarity': similarity,
+                'icon': '🎭'
+            })
+    
+    # Trier par similarité
+    all_items = sorted(all_items, key=lambda x: x['similarity'], reverse=True)
+    return all_items[:max_suggestions]
+
+# Interface de recherche
+st.subheader("🔍 Rechercher une œuvre")
+
+# Appliquer la suggestion si une a été cliquée
+if 'new_search' in st.session_state and st.session_state.new_search:
+    st.session_state.search_input = st.session_state.new_search
+    st.session_state.new_search = ''
+
+# Ligne 1 : Barre de recherche
+col1, col2 = st.columns([3, 1])
+
+with col1:
+    search_input = st.text_input(
+        "Entrez le titre, réalisateur, pays ou genre...",
+        placeholder="Ex: Stranger Things, Spielberg, France, Drama",
+        label_visibility="collapsed",
+        key="search_input"
+    )
+
+with col2:
+    st.caption("💡 Conseil : recherche fuzzy")
+
+# Ligne 2 : Filtres
+st.markdown("**Filtres (optionnels) :**")
+fcol1, fcol2, fcol3, fcol4 = st.columns(4)
+
+with fcol1:
+    filter_type = st.multiselect(
+        "Type",
+        options=["Movie", "TV Show"] if "type" in df.columns else [],
+        default=None,
+        label_visibility="collapsed"
+    )
+
+with fcol2:
+    filter_rating = st.multiselect(
+        "Rating",
+        options=sorted(df['rating'].dropna().unique()),
+        default=None,
+        label_visibility="collapsed"
+    )
+
+with fcol3:
+    filter_year_range = st.slider(
+        "Année de sortie",
+        min_value=int(df['release_year'].min()),
+        max_value=int(df['release_year'].max()),
+        value=(int(df['release_year'].min()), int(df['release_year'].max())),
+        label_visibility="collapsed"
+    )
+
+with fcol4:
+    search_type = st.selectbox(
+        "Chercher dans",
+        options=["Tous", "Titres", "Réalisateurs", "Pays", "Genres"],
+        label_visibility="collapsed"
+    )
+
+st.markdown("---")
+
+# TRAITEMENT PRINCIPAL
+if search_input and len(search_input) > 2:
+    
+    # Initialiser le dataframe filtrés
+    results_df = df.copy()
+    
+    # Appliquer les filtres
+    if filter_type:
+        results_df = results_df[results_df['type'].isin(filter_type)]
+    
+    if filter_rating:
+        results_df = results_df[results_df['rating'].isin(filter_rating)]
+    
+    results_df = results_df[
+        (results_df['release_year'] >= filter_year_range[0]) &
+        (results_df['release_year'] <= filter_year_range[1])
+    ]
+    
+    # Recherche multi-colonnes avec OR logique
+    if search_type == "Tous":
+        title_matches = results_df[
+            (results_df['title'].str.contains(search_input, case=False, na=False)) |
+            (results_df['director'].str.contains(search_input, case=False, na=False)) |
+            (results_df['country'].str.contains(search_input, case=False, na=False)) |
+            (results_df['listed_in'].str.contains(search_input, case=False, na=False))
+        ]
+    elif search_type == "Titres":
+        title_matches = results_df[results_df['title'].str.contains(search_input, case=False, na=False)]
+    elif search_type == "Réalisateurs":
+        title_matches = results_df[results_df['director'].str.contains(search_input, case=False, na=False)]
+    elif search_type == "Pays":
+        title_matches = results_df[results_df['country'].str.contains(search_input, case=False, na=False)]
+    elif search_type == "Genres":
+        title_matches = results_df[results_df['listed_in'].str.contains(search_input, case=False, na=False)]
+    else:
+        title_matches = pd.DataFrame()
+    
+    # Afficher les résultats
+    if len(title_matches) > 0:
+        st.success(f"✅ {len(title_matches)} résultat(s) trouvé(s)")
+        st.markdown("---")
+        
+        for idx, row in title_matches.iterrows():
+            # Créer 4 colonnes
+            col1, col2, col3, col4 = st.columns([3, 1, 1, 1])
+            
+            # Colonne 1 : Titre et description
+            with col1:
+                st.write(f"**{row['title']}**")
+                with st.expander("📖 Voir la description"):
+                    st.write(row['description'])
+            
+            # Colonne 2 : Type
+            with col2:
+                st.write(f"**Type**")
+                st.write(row['type'])
+            
+            # Colonne 3 : Année
+            with col3:
+                st.write(f"**Année**")
+                st.write(int(row['release_year']))
+            
+            # Colonne 4 : Rating
+            with col4:
+                st.write(f"**Rating**")
+                st.write(row['rating'] if pd.notna(row['rating']) else "N/A")
+            
+            st.markdown("---")
+    
+    else:
+        # Pas de résultat, afficher suggestions
+        suggestions = find_suggestions(search_input, df, max_suggestions=5)
+        
+        if suggestions:
+            st.warning(f"⚠️ Aucune œuvre trouvée pour '{search_input}'")
+            st.info("💡 **Suggestions** (cliquez sur le bouton pour rechercher) :")
+            st.markdown("---")
+            
+            for i, suggestion in enumerate(suggestions, 1):
+                similarity_percent = int(suggestion['similarity'] * 100)
+                
+                scol1, scol2 = st.columns([4, 1])
+                
+                with scol1:
+                    st.write(f"{suggestion['icon']} **{suggestion['type']}** : `{suggestion['value']}` ({similarity_percent}% similaire)")
+                
+                with scol2:
+                    if st.button("🔍 Chercher", key=f"suggestion_{i}_{suggestion['value']}"):
+                        st.session_state.new_search = suggestion['value']
+                        st.rerun()
+            
+            st.markdown("---")
+        else:
+            st.error(f"❌ Aucun résultat trouvé pour '{search_input}'")
+            st.info("Essayez avec des termes moins spécifiques ou vérifiez l'orthographe")
+
+elif search_input and len(search_input) <= 2:
+    st.caption("⏳ Tapez au moins 3 caractères pour rechercher...")
 
 st.markdown("---")
 
